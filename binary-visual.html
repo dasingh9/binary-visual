@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary visual</title>
+    <link href="toggle-switch.css" rel="stylesheet">
+    <link href="layout.css" rel="stylesheet">
+    
+    <style>
+        input.textbox {
+            padding: 5px;
+            width: 150px;
+            font-size: large;
+        }
+
+        .button-large {
+            font-size: large;
+            padding: 5px;
+        }
+
+        .font-courier-new {
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+
+    <script>
+        var inputDecimalNumber;
+        var inputBinaryNumber;
+        var inputHexaDecimalNumber;
+
+        function initControls(inputControls) {
+            inputDecimalNumber = inputControls.inputDecimalNumber;
+            inputBinaryNumber = inputControls.inputBinaryNumber;
+            inputHexaDecimalNumber = inputControls.inputHexaDecimalNumber;
+        }
+
+        function onDecimalNumberInput() {
+            inputBinaryNumber.value = decimalToBinary(inputDecimalNumber.value);
+            inputHexaDecimalNumber.value = decimalToHexaDecimal(inputDecimalNumber.value);
+            setBulbsContainerInnerHtml(
+                getBulbsHtmlForDisplay(inputBinaryNumber.value)
+            );
+        }
+
+        function onBinaryNumberInput() {
+            inputDecimalNumber.value = binaryToDecimal(inputBinaryNumber.value);
+            inputHexaDecimalNumber.value = decimalToHexaDecimal(inputDecimalNumber.value);
+
+            setBulbsContainerInnerHtml(
+                getBulbsHtmlForDisplay(inputBinaryNumber.value)
+            );
+        }
+
+        function setBulbsContainerInnerHtml(bulbsHtml) {
+            document.getElementById('bulbsContainer').innerHTML = bulbsHtml;
+        }
+
+        function onCheckBoxClicked() {
+            const checkboxes = [...document.getElementsByClassName("switch-checkbox")];
+            const binaryNumber = checkboxes.map(checkbox => checkbox.checked ? "1" : "0").join("");
+            inputBinaryNumber.value = binaryNumber;
+            onBinaryNumberInput();
+        }
+
+        function getBulbsHtmlForDisplay(binaryNumber) {
+            binaryNumber = parseInt(binaryNumber);
+            const defaultFormatLength = 8;
+            const formatLength = binaryNumber.toString().length > 8 ? binaryNumber.toString().length : defaultFormatLength;
+            const formattedBinaryNumber = formatBinaryNumber(binaryNumber, formatLength);
+            return createBulbs(formattedBinaryNumber.split(""));
+        }
+
+        function createBulbs(binaryDigitsArray) {
+            let bulbsHtml = "";
+            let width = 150;
+            if (binaryDigitsArray.length > 8) {
+                width = width / (binaryDigitsArray.length / 8);
+            }
+            binaryDigitsArray.forEach(binaryDigit => {
+                bulbsHtml += createBulbHtmlElement(binaryDigit, width);
+            });
+            return bulbsHtml;
+        }
+
+        function createBulbHtmlElement(binaryDigit, width) {
+            const toggleSwitchChecked = binaryDigit == 1 ? 'checked' : '';
+            const bulbImage = binaryDigit == 1 ? 'bulb-on.png' : 'bulb-off.png'
+            const newBulbHtml =
+                `<div class="item">
+                    <div class="bulb">
+                        <img src="images/${bulbImage}" style="width:${width}px">
+                    </div>
+                    <div class="toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" 
+                                class="switch-checkbox" ${toggleSwitchChecked} 
+                                onclick="onCheckBoxClicked()"
+                            >
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>`;
+            return newBulbHtml;
+        }
+
+        function formatBinaryNumber(binaryNumber, formatLength) {
+            const numberOfZerosToAdd = formatLength - binaryNumber.toString().length;
+            const formattedBinaryNumber = "0".repeat(numberOfZerosToAdd) + binaryNumber;
+            return formattedBinaryNumber;
+        }
+
+        function decimalToBinary(decimalNumber) {
+            decimalNumber = parseInt(decimalNumber);
+            return decimalNumber.toString(2);
+        }
+
+        function decimalToHexaDecimal(decimalNumber) {
+            decimalNumber = parseInt(decimalNumber);
+            return decimalNumber.toString(16).toUpperCase();
+        }
+
+        function binaryToDecimal(binaryNumber) {
+            return parseInt(binaryNumber, 2);
+        }
+
+        function generateNumbersTable(numberOfTableRows) {
+            let contentRows = "";
+            const headerRow = createHeaderRowForNumberTable();
+            for (let i = 0; i < numberOfTableRows; i++) {
+                contentRows += createContentRowForNumberTable(i);
+            }
+            return headerRow + contentRows;
+        }
+
+        function createHeaderRowForNumberTable() {
+            return `<div class="row row-header">
+                        <div>Decimal</div>
+                        <div>Binary</div>
+                        <div>Hexa decimal</div>
+                    </div>`;
+        }
+
+        function createContentRowForNumberTable(decimalNumber) {
+            const binaryNumber = decimalToBinary(decimalNumber);
+            //const formattedBinaryNumber = formatBinaryNumber(binaryNumber, 8);
+            const hexaDecimalNumber = decimalToHexaDecimal(decimalNumber);
+            return `<div class="row font-courier-new">
+                        <div>${decimalNumber}</div>
+                        <div>${binaryNumber}</div>
+                        <div>${hexaDecimalNumber}</div>
+                    </div>`;
+        }
+
+        function onPageLoad() {
+            let inputControls = {
+                inputDecimalNumber: document.getElementById("inputDecimalNumber"),
+                inputBinaryNumber: document.getElementById("inputBinaryNumber"),
+                inputHexaDecimalNumber: document.getElementById("inputHexaDecimalNumber")
+            };
+
+            initControls(inputControls);
+
+            onDecimalNumberInput();
+
+            setBulbsContainerInnerHtml(
+                getBulbsHtmlForDisplay(inputBinaryNumber.value)
+            );
+
+            populateNumbersTable();
+
+        }
+
+        function populateNumbersTable() {
+            const numberOfTableRows = document.getElementById("inputNumberOfTableRows").value;
+            document.getElementById("tableRowsContainer").innerHTML = generateNumbersTable(numberOfTableRows);
+        }
+
+        window.onload = () => onPageLoad();
+    </script>
+</head>
+
+<body>
+    <section>
+        <div class="bulbs-container" id="bulbsContainer">
+        </div>
+    </section>
+
+    <section>
+        <div class="input-container border-dashed">
+            <div class="row">
+                <div class="column">
+                    <label for="inputDecimalNumber">Decimal number: </label>
+                    <input type="number" id="inputDecimalNumber" class="textbox font-courier-new" value="0"
+                        oninput="onDecimalNumberInput()">
+                </div>
+                <div class="column">
+                    <label for="inputBinaryNumber">Binary number: </label>
+                    <input type="number" id="inputBinaryNumber" class="textbox font-courier-new"
+                        oninput="onBinaryNumberInput()">
+                </div>
+                <div class="column">
+                    <label for="inputHexaDecimalNumber">Hexa decimal number: </label>
+                    <input type="text" id="inputHexaDecimalNumber" class="textbox font-courier-new" readonly>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="table-container border-dashed">
+            <div class="row row-header">
+                <label for="numberOfTableRows">Number of rows to show in the table: </label>
+                <input type="number" id="inputNumberOfTableRows" class="textbox font-courier-new" value="15">
+                <button type="button" class="button-large" onclick="populateNumbersTable()">
+                    Generate
+                </button>
+            </div>
+            <div id="tableRowsContainer">
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>
